@@ -1,0 +1,46 @@
+{
+  "name": "webdav-manager",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "expo": "~56.0.12",
+    "expo-constants": "^56.0.18",
+    "expo-document-picker": "^56.0.4",
+    "expo-file-system": "^56.0.8",
+    "expo-image": "^56.0.11",
+    "expo-linking": "^56.0.14",
+    "expo-router": "^56.2.11",
+    "expo-secure-store": "^56.0.4",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-gesture-handler": "^3.0.1",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
+    "webdav": "^5.10.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.2",
+    "@vitest/runner": "^4.1.9",
+    "jest": "^30.4.2",
+    "jest-expo": "^56.0.5",
+    "ts-jest": "^29.4.11",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "private": true
+}
