@@ -37,7 +37,6 @@ import {
   copyItem,
   uploadFile,
   disconnect,
-  getFileUrl,
 } from "../services/webdav";
 
 const testServer: ServerConfig = {
@@ -279,27 +278,6 @@ describe("WebDAV 服务层", () => {
       await expect(uploadFile(testServer, "/fail.txt", "data")).rejects.toThrow(
         "Upload failed"
       );
-    });
-  });
-
-  // ==================== getFileUrl ====================
-  describe("getFileUrl", () => {
-    it("构造正确的 URL", () => {
-      const url = getFileUrl(testServer, "/photos/image.jpg");
-      expect(url).toBe("https://nas.example.com/dav/photos/image.jpg");
-    });
-
-    it("处理中文文件名", () => {
-      const url = getFileUrl(testServer, "/文档/报告.pdf");
-      expect(url).toContain("/dav/");
-      expect(url).toContain(encodeURIComponent("文档"));
-      expect(url).toContain(encodeURIComponent("报告.pdf"));
-    });
-
-    it("URL 不以 / 结尾时不重复斜杠", () => {
-      const serverNoSlash = { ...testServer, url: "https://nas.example.com/dav" };
-      const url = getFileUrl(serverNoSlash, "/file.txt");
-      expect(url).toBe("https://nas.example.com/dav/file.txt");
     });
   });
 

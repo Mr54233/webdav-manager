@@ -119,20 +119,6 @@ export async function copyItem(
 }
 
 /**
- * 获取文件下载 URL
- * 用于直接在浏览器/WebView 中打开文件
- */
-export function getFileUrl(server: ServerConfig, path: string): string {
-  // 构造带认证的 URL
-  const base = server.url.replace(/\/$/, "");
-  const encodedPath = path
-    .split("/")
-    .map((p) => encodeURIComponent(p))
-    .join("/");
-  return `${base}${encodedPath}`;
-}
-
-/**
  * 上传文件内容
  * @param path 远程路径
  * @param content 文件内容（字符串或 Buffer）

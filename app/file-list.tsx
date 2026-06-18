@@ -12,6 +12,16 @@ import { useServerStore } from "../src/stores/server";
 import { listFiles, deleteItem, createDirectory, moveItem, copyItem } from "../src/services/webdav";
 import { FileEntry, SortConfig } from "../src/types";
 import { formatSize, formatDate, getFileIcon, isPreviewable } from "../src/utils/format";
+import { PromptModal } from "../src/components/PromptModal";
+
+// 输入弹窗状态（移动/复制/重命名共用，跨平台替代 iOS-only 的 Alert.prompt）
+interface PromptState {
+  title: string;
+  message?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  onConfirm: (value: string) => void | Promise<void>;
+}
 
 export default function FileListScreen() {
   const router = useRouter();
@@ -37,6 +47,8 @@ export default function FileListScreen() {
   // 搜索
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  // 输入弹窗（移动/复制/重命名共用）
+  const [prompt, setPrompt] = useState<PromptState | null>(null);
 
   // 当前目录是否已收藏
   const isFavorited = currentServer
@@ -119,95 +131,75 @@ export default function FileListScreen() {
     }
   };
 
+  // 移动（通过输入目标路径实现）
+  const handleMove = (item: FileEntry) => {
+    setPrompt({
+      title: "移动到",
+      message: "输入目标路径（如 /documents/）",
+      defaultValue: currentPath,
+      onConfirm: async (destPath) => {
+        if (!destPath.trim() || !currentServer) return;
+        const dest = destPath.trim().endsWith("/")
+          ? destPath.trim() + item.basename
+          : destPath.trim() + "/" + item.basename;
+        try {
+          await moveItem(currentServer, item.filename, dest);
+          Alert.alert("移动成功 ✅");
+          loadFiles();
+        } catch (e: any) {
+          Alert.alert("移动失败 ❌", e?.message || "未知错误");
+        }
+      },
+    });
+  };
+
+  // 复制（通过输入目标路径实现）
+  const handleCopy = (item: FileEntry) => {
+    setPrompt({
+      title: "复制到",
+      message: "输入目标路径（如 /backup/）",
+      defaultValue: currentPath,
+      onConfirm: async (destPath) => {
+        if (!destPath.trim() || !currentServer) return;
+        const dest = destPath.trim().endsWith("/")
+          ? destPath.trim() + item.basename
+          : destPath.trim() + "/" + item.basename;
+        try {
+          await copyItem(currentServer, item.filename, dest);
+          Alert.alert("复制成功 ✅");
+          loadFiles();
+        } catch (e: any) {
+          Alert.alert("复制失败 ❌", e?.message || "未知错误");
+        }
+      },
+    });
+  };
+
   // 长按文件/目录 → 操作菜单
   const handleLongPress = (item: FileEntry) => {
-    const options: any[] = [
-      {
-        text: "移动",
-        onPress: () => handleMove(item),
-      },
-      {
-        text: "复制",
-        onPress: () => handleCopy(item),
-      },
-      {
-        text: "重命名",
-        onPress: () => handleRename(item),
-      },
-      {
-        text: "删除",
-        style: "destructive",
-        onPress: () => handleDelete(item),
-      },
-      { text: "取消", style: "cancel" },
-    ];
+    const options: any[] = [];
 
     // 目录可以收藏
     if (item.type === "directory") {
-      options.unshift({
+      options.push({
         text: isFavorited ? "取消收藏" : "收藏",
         onPress: () => toggleFavorite(item.filename),
       });
     }
 
+    options.push(
+      { text: "移动", onPress: () => handleMove(item) },
+      { text: "复制", onPress: () => handleCopy(item) },
+      { text: "重命名", onPress: () => handleRename(item) },
+      {
+        text: "删除",
+        style: "destructive",
+        onPress: () => handleDelete(item),
+      },
+      { text: "取消", style: "cancel" }
+    );
+
     Alert.alert(item.basename, "选择操作", options);
-
-    // 移动/复制操作（通过输入目标路径实现）
-    const handleMove = (item: FileEntry) => {
-      Alert.prompt?.(
-        "移动到",
-        "输入目标路径（如 /documents/）",
-        [
-          { text: "取消", style: "cancel" },
-          {
-            text: "移动",
-            onPress: async (destPath: string | undefined) => {
-              if (!destPath?.trim() || !currentServer) return;
-              const dest = destPath.trim().endsWith("/")
-                ? destPath.trim() + item.basename
-                : destPath.trim() + "/" + item.basename;
-              try {
-                await moveItem(currentServer, item.filename, dest);
-                Alert.alert("移动成功 ✅");
-                loadFiles();
-              } catch (e: any) {
-                Alert.alert("移动失败 ❌", e?.message || "未知错误");
-              }
-            },
-          },
-        ],
-        "plain-text",
-        currentPath
-      );
-    };
-
-    const handleCopy = (item: FileEntry) => {
-      Alert.prompt?.(
-        "复制到",
-        "输入目标路径（如 /backup/）",
-        [
-          { text: "取消", style: "cancel" },
-          {
-            text: "复制",
-            onPress: async (destPath: string | undefined) => {
-              if (!destPath?.trim() || !currentServer) return;
-              const dest = destPath.trim().endsWith("/")
-                ? destPath.trim() + item.basename
-                : destPath.trim() + "/" + item.basename;
-              try {
-                await copyItem(currentServer, item.filename, dest);
-                Alert.alert("复制成功 ✅");
-                loadFiles();
-              } catch (e: any) {
-                Alert.alert("复制失败 ❌", e?.message || "未知错误");
-              }
-            },
-          },
-        ],
-        "plain-text",
-        currentPath
-      );
-    };
   };
 
   // 删除
@@ -231,30 +223,22 @@ export default function FileListScreen() {
 
   // 重命名
   const handleRename = (item: FileEntry) => {
-    Alert.prompt?.(
-      "重命名",
-      "输入新名称",
-      [
-        { text: "取消", style: "cancel" },
-        {
-          text: "确定",
-          onPress: async (newName: string | undefined) => {
-            if (!newName?.trim()) return;
-            const parentPath = currentPath.replace(/\/[^/]*\/?$/, "/");
-            const newPath = parentPath + newName.trim();
-            try {
-              const { moveItem } = await import("../src/services/webdav");
-              await moveItem(currentServer!, item.filename, newPath);
-              loadFiles();
-            } catch (e: any) {
-              Alert.alert("重命名失败", e?.message || "未知错误");
-            }
-          },
-        },
-      ],
-      "plain-text",
-      item.basename
-    );
+    setPrompt({
+      title: "重命名",
+      message: "输入新名称",
+      defaultValue: item.basename,
+      onConfirm: async (newName) => {
+        if (!newName.trim()) return;
+        const parentPath = currentPath.replace(/\/[^/]*\/?$/, "/");
+        const newPath = parentPath + newName.trim();
+        try {
+          await moveItem(currentServer!, item.filename, newPath);
+          loadFiles();
+        } catch (e: any) {
+          Alert.alert("重命名失败", e?.message || "未知错误");
+        }
+      },
+    });
   };
 
   // 新建文件夹
@@ -503,6 +487,21 @@ export default function FileListScreen() {
           }
         />
       )}
+
+      {/* 输入弹窗（移动/复制/重命名共用） */}
+      <PromptModal
+        visible={prompt !== null}
+        title={prompt?.title ?? ""}
+        message={prompt?.message}
+        defaultValue={prompt?.defaultValue}
+        placeholder={prompt?.placeholder}
+        onConfirm={(value) => {
+          const cb = prompt?.onConfirm;
+          setPrompt(null);
+          cb?.(value);
+        }}
+        onCancel={() => setPrompt(null)}
+      />
     </View>
   );
 }

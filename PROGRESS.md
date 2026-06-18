@@ -82,11 +82,11 @@
 |----------|--------|------|
 | format.test.ts | 35 | ✅ |
 | store.test.ts | 19 | ✅ |
-| webdav.test.ts | 26 | ✅ |
+| webdav.test.ts | 23 | ✅ |
 | download.test.ts | 8 | ✅ |
 | theme.test.ts | 11 | ✅ |
 | edge-cases.test.ts | 30 | ✅ |
-| **总计** | **129** | **✅ 全部通过** |
+| **总计** | **126** | **✅ 全部通过** |
 
 ---
 

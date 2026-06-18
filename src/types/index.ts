@@ -27,6 +27,3 @@ export interface SortConfig {
   field: SortField;
   order: SortOrder;
 }
-
-// 视图模式
-export type ViewMode = 'list' | 'grid';

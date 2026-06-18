@@ -96,13 +96,13 @@ webdav-manager/
 运行测试：`pnpm test`
 监听模式：`pnpm test:watch`
 
-当前：**129 测试，100% 通过率**
+当前：**126 测试，100% 通过率**
 
 | 文件 | 测试数 | 覆盖范围 |
 |------|--------|----------|
 | format.test.ts | 35 | formatSize, formatDate, getFileIcon, isPreviewable, getPreviewType |
 | store.test.ts | 19 | 服务器 CRUD、收藏管理、持久化存储 |
-| webdav.test.ts | 26 | 连接测试、文件列表、创建/删除/移动/复制、上传 |
+| webdav.test.ts | 23 | 连接测试、文件列表、创建/删除/移动/复制、上传 |
 | download.test.ts | 8 | 文件下载、上传、进度回调 |
 | theme.test.ts | 11 | 主题切换、持久化、颜色定义 |
 | edge-cases.test.ts | 30 | 边界输入、特殊字符、大写扩展名、类型验证 |
